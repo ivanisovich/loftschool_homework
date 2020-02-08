@@ -17,8 +17,23 @@
    isAllTrue([100, 2, 3, 4, 5], n => n < 10) // вернет false
  */
 function isAllTrue(array, fn) {
-}
+    if (array.length == 0 ) {
+        throw new Error('empty array');
+    }
+    if (typeof fn !== 'function') {
+        throw new Error('fn is not a function')
+    }
+    if (array instanceof Array == false) {
+        throw new Error('empty array')
+    }
+    let result = true;
 
+    for (let i = 0; i < array.length; i++) {
+        result *= fn(array[i]);
+    }
+
+    return !!result;
+}
 /*
  Задание 2:
 
@@ -36,6 +51,22 @@ function isAllTrue(array, fn) {
    isSomeTrue([1, 2, 3, 4, 5], n => n > 20) // вернет false
  */
 function isSomeTrue(array, fn) {
+    if (array.length == 0 ) {
+        throw new Error('empty array');
+    }
+    if (array instanceof Array == false) {
+        throw new Error('empty array')
+    } 
+    if (typeof fn !== 'function') {
+        throw new Error('fn is not a function')
+    }
+    var result = false;
+
+    for (var i = 0; i < array.length; i++) {
+        result += fn(array[i]);
+    }
+
+    return !!result;
 }
 
 /*
@@ -50,8 +81,21 @@ function isSomeTrue(array, fn) {
    - fn не является функцией (с текстом "fn is not a function")
  */
 function returnBadArguments(fn) {
-}
+    var ARR = [];
 
+    if (typeof fn != 'function') {
+        throw new Error('fn is not a function');
+    }
+    for (var i = 1; i < arguments.length; i++) {
+        try {
+            fn(arguments[i]);
+        } catch (e) {
+            ARR.push(arguments[i]);
+        }
+    }
+
+    return ARR;
+}
 /*
  Задание 4:
 
@@ -69,9 +113,60 @@ function returnBadArguments(fn) {
    - number не является числом (с текстом "number is not a number")
    - какой-либо из аргументов div является нулем (с текстом "division by 0")
  */
-function calculator() {
-}
+function calculator(number = 0) {
+    if (typeof number != 'number') {
+        throw new Error('number is not a number');
+    }
 
+    var ob = {
+        sum: function () {
+            for (var i = 0; i < arguments.length; i++) {
+                if (arguments[i] === 0) {
+                    throw new Error('division by 0');
+                }
+                number += arguments[i];
+
+            }
+
+            return number;
+        },
+        dif: function () {
+            for (var i = 0; i < arguments.length; i++) {
+                if (arguments[i] === 0) {
+                    throw new Error('division by 0');
+                }
+                number -= arguments[i];
+
+            }
+
+            return number;
+        },
+        div: function () {
+            for (var i = 0; i < arguments.length; i++) {
+                if (arguments[i] === 0) {
+                    throw new Error('division by 0');
+                }
+                number /= arguments[i];
+
+            }
+
+            return number;
+        },
+        mul: function () {
+            for (var i = 0; i < arguments.length; i++) {
+                if (arguments[i] === 0) {
+                    throw new Error('division by 0');
+                }
+                number *= arguments[i];
+
+            }
+
+            return number;
+        }
+    }
+
+    return ob;
+}
 /* При решении задач, пострайтесь использовать отладчик */
 
 export {

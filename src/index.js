@@ -19,20 +19,18 @@
 function isAllTrue(array, fn) {
     if (array.length == 0 ) {
         throw new Error('empty array');
-    }
-    if (typeof fn !== 'function') {
+    } else if (typeof fn !== 'function') {
         throw new Error('fn is not a function')
-    }
-    if (array instanceof Array == false) {
+    } else if (array instanceof Array == false) {
         throw new Error('empty array')
     }
-    let result = true;
-
     for (let i = 0; i < array.length; i++) {
-        result *= fn(array[i]);
+        if (fn(array[i]) == false) {
+            return false;
+        }
     }
-
-    return !!result;
+    
+    return true;
 }
 /*
  Задание 2:
@@ -81,7 +79,7 @@ function isSomeTrue(array, fn) {
    - fn не является функцией (с текстом "fn is not a function")
  */
 function returnBadArguments(fn) {
-    var ARR = [];
+    var arr = [];
 
     if (typeof fn != 'function') {
         throw new Error('fn is not a function');
@@ -90,11 +88,11 @@ function returnBadArguments(fn) {
         try {
             fn(arguments[i]);
         } catch (e) {
-            ARR.push(arguments[i]);
+            arr.push(arguments[i]);
         }
     }
 
-    return ARR;
+    return arr;
 }
 /*
  Задание 4:
@@ -121,9 +119,6 @@ function calculator(number = 0) {
     var ob = {
         sum: function () {
             for (var i = 0; i < arguments.length; i++) {
-                if (arguments[i] === 0) {
-                    throw new Error('division by 0');
-                }
                 number += arguments[i];
 
             }
@@ -132,9 +127,6 @@ function calculator(number = 0) {
         },
         dif: function () {
             for (var i = 0; i < arguments.length; i++) {
-                if (arguments[i] === 0) {
-                    throw new Error('division by 0');
-                }
                 number -= arguments[i];
 
             }
@@ -154,9 +146,6 @@ function calculator(number = 0) {
         },
         mul: function () {
             for (var i = 0; i < arguments.length; i++) {
-                if (arguments[i] === 0) {
-                    throw new Error('division by 0');
-                }
                 number *= arguments[i];
 
             }

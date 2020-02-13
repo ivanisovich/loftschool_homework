@@ -11,6 +11,11 @@
    createDivWithText('loftschool') // создаст элемент div, поместит в него 'loftschool' и вернет созданный элемент
  */
 function createDivWithText(text) {
+    const newItem = document.createElement('div');
+
+    newItem.textContent = text;
+    
+    return newItem;
 }
 
 /*
@@ -22,6 +27,7 @@ function createDivWithText(text) {
    prepend(document.querySelector('#one'), document.querySelector('#two')) // добавит элемент переданный первым аргументом в начало элемента переданного вторым аргументом
  */
 function prepend(what, where) {
+    where.prepend(what);
 }
 
 /*
@@ -44,6 +50,18 @@ function prepend(what, where) {
    findAllPSiblings(document.body) // функция должна вернуть массив с элементами div и span т.к. следующим соседом этих элементов является элемент с тегом P
  */
 function findAllPSiblings(where) {
+    let w = where.children;
+    let result = [];
+    let next;
+
+    for (let node of w) {
+        next = node.nextElementSibling;
+        if (next && next.tagName === 'P') {
+            result.push(node);
+        }
+    }
+
+    return result;
 }
 
 /*
@@ -66,7 +84,7 @@ function findAllPSiblings(where) {
 function findError(where) {
     var result = [];
 
-    for (var child of where.childNodes) {
+    for (var child of where.children) {
         result.push(child.innerText);
     }
 
@@ -86,6 +104,11 @@ function findError(where) {
    должно быть преобразовано в <div></div><p></p>
  */
 function deleteTextNodes(where) {
+    for (let node of where.childNodes) {
+        if (node.nodeType === 3) {
+            where.removeChild(node);
+        }
+    }
 }
 
 /*
@@ -100,8 +123,14 @@ function deleteTextNodes(where) {
    должно быть преобразовано в <span><div><b></b></div><p></p></span>
  */
 function deleteTextNodesRecursive(where) {
+    for (let node of [...where.childNodes]) {
+        if (node.nodeType === 3) {
+            node.parentNode.removeChild(node);
+        } else { 
+            deleteTextNodesRecursive(node);
+        }
+    }
 }
-
 /*
  Задание 7 *:
 
@@ -123,8 +152,52 @@ function deleteTextNodesRecursive(where) {
    }
  */
 function collectDOMStat(root) {
-}
+    let stat = {
+        tags: {},
+        classes: {},
+        texts: 0
+    };
 
+    const current = (where) => {
+        let list = where.childNodes;
+
+        if (list.length > 0) {
+            for (let node of [...list]) {
+                if (node.nodeType === 1) {
+                    let classValue = node.classList;
+                    let tagValue = node.tagName;
+
+                    if (stat.tags.hasOwnProperty(tagValue)) {
+                        stat.tags[tagValue]++;
+                    } else {
+                        stat.tags[tagValue] = 1;
+                    }
+                    if (classValue.length) {
+                        classValue.forEach(className => {
+                            if (stat.classes.hasOwnProperty(className)) {
+                                stat.classes[className]++;
+                            } else {
+                                stat.classes[className] = 1;
+                            }
+                        })
+
+                    }
+
+                } else if (node.nodeType === 3) {
+                    stat.texts++;
+                }
+
+                current(node)
+            }
+            
+        }
+
+    }
+
+    current(root);
+
+    return stat;
+}
 /*
  Задание 8 *:
 
@@ -158,6 +231,35 @@ function collectDOMStat(root) {
    }
  */
 function observeChildNodes(where, fn) {
+    const stat = {
+        type: '',
+        nodes: []
+    };
+
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+
+            if (Object.keys(mutation.addedNodes).length) {
+                stat.type = 'insert';
+
+                for (let item of mutation.addedNodes) {
+                    stat.nodes.push(item);
+                }
+
+            } else if (Object.keys(mutation.removedNodes).length) {
+                stat.type = 'remove';
+                for (let item of mutation.removedNodes) {
+                    stat.nodes.push(item);
+                }
+            }
+            fn(stat);
+
+        });
+    });
+
+    const config = { attributes: true, childList: true, characterData: true };
+
+    observer.observe(where, config);
 }
 
 export {

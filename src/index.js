@@ -85,12 +85,13 @@ function once(target, fn) {
         if (once) {
             fn();
             once = false;
-            target.removeEventListener(target, fn);
-        
+            target.removeEventListener('click', (e) => e);
+            
         }
-    })
-
+    }
+    )
 }
+
 export {
     addListener,
     removeListener,

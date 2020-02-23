@@ -37,28 +37,27 @@ const homeworkContainer = document.querySelector('#homework-container');
  https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json
  */
 function loadTowns() {
-  return townsPromise = new Promise((resolve) => {
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', 'https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json');
-      xhr.responseType = 'json';
+    let url = 'https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json';
 
-      xhr.addEventListener('load', () => {
+    return (async () => {
+        try {
+            const response = await fetch(url);
+            const json = await response.json();
 
-          loadingBlock.innerHTML = '';
-          filterBlock.style.display = 'inline-block';
+            return json.sort((a, b) => {
+                if (a.name > b.name) {
+                    return 1;
+                }
+                if (a.name < b.name) {
+                    return -1;
+                }
 
-          resolve(xhr.response.sort(function (a, b) {
-              if (a.name > b.name) {
-                  return 1;
-              }
-              if (a.name < b.name) {
-                  return -1;
-              }
-              return 0;
-          }));
-      });
-      xhr.send();
-  });
+                return 0;
+            })
+        } catch (e) {
+            throw new Error(e.message);
+        }
+    })();
 }
 
 /**
@@ -86,25 +85,95 @@ let loadingBlock = homeworkContainer.querySelector('#loading-block');
 let filterBlock = homeworkContainer.querySelector('#filter-block');
 let filterInput = homeworkContainer.querySelector('#filter-input');
 let filterResult = homeworkContainer.querySelector('#filter-result');
-let townsPromise;
-let cities = [];
 
-loadTowns()
-  .then(res => {
-      cities = res;
-      loadingBlock.style.display = 'none';
-      filterBlock.style.display = 'block';
-  });
+function renderList(list) {
+    for (let item of list) {
+        let fragment = document.createDocumentFragment();
+        let span = document.createElement('span');
 
-filterInput.addEventListener('keyup', function () {
-  filterResult.innerHTML = filterInput.value ?
-      cities
-          .filter(item => isMatching(item.name, filterInput.value))
-          .map(item => `
-${item.name}
-`)
-          .join('')
-      : '';
+        span.innerText = item.name;
+        fragment.appendChild(span);
+        filterResult.appendChild(fragment);
+    }
+}
+
+const getTownFromServer = async ()=>{
+    try {
+        let res = await loadTowns();
+
+        localStorage.setItem('townList', JSON.stringify(res));
+
+        return res;
+    } catch (e) {
+        console.error(e.message)
+    }
+
+};
+
+
+const getTownFromStore = ()=>{
+    return JSON.parse(localStorage.getItem('townList'));
+};
+
+addEventListener('DOMContentLoaded', async ()=>{
+    try {
+        let res = await getTownFromServer();
+
+        if (res) {
+            renderList(res);
+            loadingBlock.style.display = 'none';
+            filterBlock.style.display = 'block';
+        }
+
+    } catch (e) {
+        loadingBlock.textContent = '';
+        reloader('build');
+
+    }
+});
+document.body.addEventListener('click', async (e)=> {
+    if (e.target.classList.contains('button')) {
+        try {
+            let res = await getTownFromStore();
+
+            if (res) {
+                reloader('destroy');
+                renderList(res);
+                loadingBlock.style.display = 'none';
+                filterBlock.style.display = 'block';
+            }
+
+        } catch (e) {
+            loadingBlock.textContent = '';
+            reloader('build');
+
+        }
+    }      
+});
+
+filterInput.addEventListener('keyup', async (e)=> {
+    try {
+        loadingBlock.style.display = 'block';
+        let res = await getTownFromStore();
+
+        filterResult.innerHTML = '';
+        let filterRes = [];
+
+        for (let item of res) {
+            if (isMatching(item.name, e.target.value)) {
+                filterRes.push(item)
+            }
+        }
+        renderList(filterRes);
+        loadingBlock.style.display = 'none';
+
+        if (e.target.value === '') {
+            filterResult.innerHTML = '';
+        }
+    } catch (e) {
+        throw new Error(e.message)
+    }
+
 });
 
 export {

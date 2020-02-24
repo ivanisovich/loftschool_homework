@@ -45,8 +45,139 @@ const listTable = homeworkContainer.querySelector('#list-table tbody');
 
 filterNameInput.addEventListener('keyup', function() {
     // здесь можно обработать нажатия на клавиши внутри текстового поля для фильтрации cookie
+    const value = filterNameInput.value;
+    const allCookie = parseCookie();
+    const res = filterObj(value, allCookie);
+
+    renderTable(res);
+
+});
+
+window.addEventListener('DOMContentLoaded', ()=>{
+    const allCookie = parseCookie();
+
+    renderTable(allCookie);
+
+    listTable.addEventListener('click', e => {
+
+        if (e.target.classList.contains('button')) {
+
+            deleteCookie(e.target.dataset.name);
+            deleteRowTable(e.target.closest('tr'));
+        }
+        addNameInput.value = '';
+        addValueInput.value = '';
+    })
+
 });
 
 addButton.addEventListener('click', () => {
     // здесь можно обработать нажатие на кнопку "добавить cookie"
+    const name = addNameInput.value;
+    const value = addValueInput.value;
+    const filterValue = filterNameInput.value;
+    const allCookie = parseCookie();   
+
+    addCookie(name, value);
+    if (filterValue) {
+        if (isMatching(name, filterValue) || isMatching(value, filterValue)) {
+            addRowTable(name, value);
+       
+        }
+        if (allCookie.hasOwnProperty(name) && !isMatching(value, filterValue)) {
+            deleteRowTable(getRowTable(name));
+        }
+    } else {
+        renderTable(parseCookie());
+        
+    }
 });
+
+function parseCookie() {
+    const cookie = document.cookie;
+
+    return cookie.split('; ').reduce((prev, current)=>{
+        let [name, value] = current.split('=');
+
+        prev[name] = value;
+
+        return prev;
+    }, {})
+
+}
+function addCookie(name, value) {
+    if (name) {
+        document.cookie = `${name}=${value};`;
+
+    }
+    
+}
+
+function deleteCookie(name) {
+    document.cookie = `${name}=''; expires='Thu, 01 Jan 1970 00:00:01 GMT'`;
+
+}
+
+function addRowTable(name, value) {
+    const tr = document.createElement('tr');
+    const tdName = document.createElement('td');
+    const tdValue = document.createElement('td');
+    const tdDel = document.createElement('td');
+    const button = document.createElement('button');
+
+    tdName.innerText = name;
+    tdValue.innerText = value;
+    button.innerText = 'Удалить';
+  
+    button.dataset.name = name;
+    button.classList.add('button');
+    tdDel.appendChild(button);
+
+    tr.classList.add(name);
+    tr.appendChild(tdName);
+    tr.appendChild(tdValue);
+    tr.appendChild(tdDel);
+    listTable.appendChild(tr);
+    
+}
+function deleteRowTable(row) {
+    row.parentNode.removeChild(row);
+    
+}
+function getRowTable(name) {
+    return document.getElementsByClassName(name)[0];
+
+}
+function renderTable(obj) {
+    listTable.innerHTML = '';
+
+    for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            addRowTable(key, obj[key]);
+        }
+    }
+}
+
+function isMatching(full, chunk) {
+    let regexp = new RegExp(chunk, 'i');
+
+    if (full.search(regexp) > -1) {
+        return true;
+    }
+
+    return false;
+}
+function filterObj(value, obj) {
+    let filterObj = {};
+
+    for (let key in obj) {
+        if (isMatching(key, value) || isMatching(obj[key], value)) {
+            if (obj.hasOwnProperty(key)) {
+                filterObj[key] = obj[key];
+            }
+
+        }
+    }
+
+    return filterObj;
+}

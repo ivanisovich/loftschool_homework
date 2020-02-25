@@ -65,8 +65,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
             deleteCookie(e.target.dataset.name);
             deleteRowTable(e.target.closest('tr'));
         }
-        addNameInput.value = '';
-        addValueInput.value = '';
+
     })
 
 });
@@ -88,6 +87,7 @@ addButton.addEventListener('click', () => {
             deleteRowTable(getRowTable(name));
         }
     } else {
+        
         renderTable(parseCookie());
         
     }
@@ -95,26 +95,30 @@ addButton.addEventListener('click', () => {
 
 function parseCookie() {
     const cookie = document.cookie;
+    
+    if (document.cookie) {
+        return cookie.split('; ').reduce((prev, current)=>{
+            let [name, value] = current.split('=');
 
-    return cookie.split('; ').reduce((prev, current)=>{
-        let [name, value] = current.split('=');
+            prev[name] = value;
 
-        prev[name] = value;
+            return prev;
+        }, {} ) 
+    }
 
-        return prev;
-    }, {})
-
+    return {};
+    
 }
 function addCookie(name, value) {
     if (name) {
         document.cookie = `${name}=${value};`;
-
-    }
-    
+    } 
 }
 
 function deleteCookie(name) {
     document.cookie = `${name}=''; expires='Thu, 01 Jan 1970 00:00:01 GMT'`;
+    addNameInput.value = '';
+    addValueInput.value = '';
 
 }
 
